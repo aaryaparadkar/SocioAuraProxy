@@ -10,7 +10,6 @@ app.use(express.json());
 
 app.post('/api/v1', async (req, res) => {
     try {
-        // Transform the request to match Langflow's expected format
         const langflowRequest = {
             input_value: req.body.input,
             output_type: "chat",
@@ -35,15 +34,26 @@ app.post('/api/v1', async (req, res) => {
             }
         });
 
-        // Extract the actual message content from the response
+        // Log the full response structure
+        console.log('Full Langflow Response:', JSON.stringify(response.data, null, 2));
+
+        // Extract the response based on Langflow's structure
         let outputText;
-        if (response.data.outputs && typeof response.data.outputs === 'object') {
-            outputText = response.data.outputs.output || response.data.outputs.result || "No response content";
+        if (response.data && response.data.result && response.data.result.output) {
+            outputText = response.data.result.output;
+        } else if (response.data && response.data.output) {
+            outputText = response.data.output;
+        } else if (response.data && response.data.outputs) {
+            outputText = response.data.outputs;
         } else if (typeof response.data === 'string') {
             outputText = response.data;
         } else {
-            outputText = "Unexpected response format";
+            console.log('Unexpected response structure:', response.data);
+            outputText = "Unable to parse response";
         }
+
+        // Log the extracted output
+        console.log('Extracted output:', outputText);
 
         res.json({ output: outputText });
     } catch (error) {
