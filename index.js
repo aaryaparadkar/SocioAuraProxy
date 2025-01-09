@@ -35,12 +35,17 @@ app.post('/api/v1', async (req, res) => {
             }
         });
 
-        // Transform the response to match what your frontend expects
-        const transformedResponse = {
-            output: response.data.output || response.data.result || response.data
-        };
+        // Extract the actual message content from the response
+        let outputText;
+        if (response.data.outputs && typeof response.data.outputs === 'object') {
+            outputText = response.data.outputs.output || response.data.outputs.result || "No response content";
+        } else if (typeof response.data === 'string') {
+            outputText = response.data;
+        } else {
+            outputText = "Unexpected response format";
+        }
 
-        res.json(transformedResponse);
+        res.json({ output: outputText });
     } catch (error) {
         console.error('Error details:', error.response?.data || error.message);
         res.status(500).json({
