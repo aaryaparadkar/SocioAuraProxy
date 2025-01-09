@@ -15,16 +15,22 @@ app.listen(PORT, () => {
 app.post('/api/v1', async (req, res) => {
     try {
         const response = await axios.post(`${process.env.API}`, {
-            Headers: {
+            headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.TOKEN}`
             },
-            body: req.body
+            data: {
+                input: req.body.input
+            }
         })
 
         const data = await response.json()
         res.json(data)
     } catch (error) {
-        console.error(error);
+        console.error('Error details:', error.response?.data || error.message);
+        res.status(500).json({ 
+            error: 'Failed to process request',
+            details: error.response?.data || error.message
+        });
     }
 })
