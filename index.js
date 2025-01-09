@@ -34,26 +34,23 @@ app.post('/api/v1', async (req, res) => {
             }
         });
 
-        // Log the full response structure
-        console.log('Full Langflow Response:', JSON.stringify(response.data, null, 2));
-
-        // Extract the response based on Langflow's structure
-        let outputText;
-        if (response.data && response.data.result && response.data.result.output) {
-            outputText = response.data.result.output;
-        } else if (response.data && response.data.output) {
-            outputText = response.data.output;
-        } else if (response.data && response.data.outputs) {
-            outputText = response.data.outputs;
-        } else if (typeof response.data === 'string') {
-            outputText = response.data;
-        } else {
-            console.log('Unexpected response structure:', response.data);
-            outputText = "Unable to parse response";
+        // Extract the message from the nested structure
+        let outputText = "No response content";
+        
+        if (response.data && 
+            response.data.outputs && 
+            response.data.outputs[0] && 
+            response.data.outputs[0].outputs && 
+            response.data.outputs[0].outputs[0] && 
+            response.data.outputs[0].outputs[0].messages && 
+            response.data.outputs[0].outputs[0].messages[0] && 
+            response.data.outputs[0].outputs[0].messages[0].message) {
+            
+            outputText = response.data.outputs[0].outputs[0].messages[0].message;
         }
 
-        // Log the extracted output
-        console.log('Extracted output:', outputText);
+        // Log for debugging
+        console.log('Extracted text:', outputText);
 
         res.json({ output: outputText });
     } catch (error) {
